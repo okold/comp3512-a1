@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>COMP 3512 Assignment 1</title>
+        <link rel="preconnect" href="https://fonts.gstatic.com">
+        <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet"> 
+        <link rel="stylesheet" href="reset.css">
+        <link rel="stylesheet" href="style.css">
+        <script src="script.js"></script>
+    </head>
+    <body>
+        <header>
+            <div><p>Credits</p></div>
+            <h1>COMP 3512 Assignment 1</h1>
+        </header>
+        <section id="credits">
+            <h2>Credits</h2>
+            <p>Olga Koldachenko - okold525@mtroyal.ca</p>
+            <p>COMP 3512 - Winter 2021 - Randy Connolly</p>
+        </section>
+        <section id="default_view" class="view">
+            <div id="list">
+                <h2>List of Companies</h2>
+                <div id="search">
+                    <label for="target">Filter</label>
+                    <input type="text" id="target" name="target">
+                    <button id="clear">Clear</button>
+                </div>
+                <div class="load"><img src="spinner.gif"></div>
+                <ul>
+                </ul>
+            </div>
+            <div id="desc">
+                <h2>Company Information</h2>
+                <div id="card">
+                    <div id="info">
+                        <h3 id="symbol"></h3>
+                        <h4 id="name"></h3>
+                        <a href="" id="url"></a>
+                        <label>Sector</label>
+                        <p id="sector"></p>
+                        <label>Subindustry</label>
+                        <p id="subindustry"></p>
+                        <label>Address</label>
+                        <p id="address"></p>
+                        <label>Exchange</label>
+                        <p id="exchange"></p>
+                    </div>
+                    <div id="logo">
+                        <img src="">
+                    </div>
+                </div>
+                <p id="description">Select a company on the left to get started!</p>
+
+            </div>
+            <div id="map">
+                <h2>Map</h2>
+                <div class="data"></div>
+            </div>
+            <div id="stock_data">
+                <h2>Stock Data</h2>
+                <div class="data"></div>
+            </div>
+            <div id="stock_summary">
+                <div class="data"></div>
+            </div>
+        </section>
+        <section id="chart_view" class="view">
+            TODO
+        </section>
+    </body>
+</html>
