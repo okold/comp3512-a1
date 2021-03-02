@@ -1,5 +1,14 @@
-// EVENTS
-document.addEventListener("DOMContentLoaded", (doc_event) => {
+// MAP SETUP
+var map;
+function initMap() {
+    map = new google.maps.Map(document.getElementById('map'), {
+        center: {lat: 0, lng: 0},
+        zoom: 1
+  });
+}
+
+// LIST EVENTS
+document.addEventListener("DOMContentLoaded", (e) => {
     let list_div = document.querySelector(`#list ul`);
     let info_card = document.querySelector(`#card`);
     let logo_box = document.querySelector(`#logo`);
@@ -9,10 +18,24 @@ document.addEventListener("DOMContentLoaded", (doc_event) => {
     let company_selected = false;
     
     hide_element(list_div);
-    hide_element(info_card);
-    hide_element(logo_box);
 
     filter_box.value = null;
+
+    // CREDITS
+    let credit_button = document.querySelector("header div");
+    let credit_visible = false;
+
+    credit_button.addEventListener("click", (e) => {
+        let credit_info = document.querySelector("#credits");
+        if (!credit_visible) {
+            show_element(credit_info,"block");
+            credit_visible = true;
+        }
+        else {
+            hide_element(credit_info)
+            credit_visible = false;
+        }
+    })
 
     // a function to populate the list in the sidebar
     // takes a list of Company objects and returns an array of li nodes
@@ -45,6 +68,8 @@ document.addEventListener("DOMContentLoaded", (doc_event) => {
                 let url = document.querySelector(`#url`);
                 url.textContent = company.website;
                 url.href = company.website;
+                map.setCenter({lat: company.latitude, lng: company.longitude});
+                map.setZoom(6);
 
                 if (!company_selected) {
                     show_element(info_card, "flex");
@@ -96,6 +121,9 @@ document.addEventListener("DOMContentLoaded", (doc_event) => {
             filter_list(li_array)
         }
     });
+
+
+
 });
 
 // HELPER FUNCTIONS
