@@ -38,7 +38,7 @@
         </section>
         <section id="default_view" class="view">
             <div id="list">
-                <h2>List of Companies</h2>
+                <h2>Companies</h2>
                 <div id="search">
                     <label for="target">Filter</label>
                     <input type="text" id="target" name="target">
@@ -78,9 +78,52 @@
                     <button id="view_chart_button">View Charts</button>
                 </div>
                 <div class="load"><img src="spinner.gif"></div>
+                <table>
+                    <thead>
+                        <tr>
+                            <td><label id="date">Date</label></td>
+                            <td><label id="open">Open</label></td>
+                            <td><label id="close">Close</label></td>
+                            <td><label id="low">Low</label></td>
+                            <td><label id="high">High</label></td>
+                            <td><label id="volume">Volume</label></td>
+                        </tr>
+                    </thead>
+                </table>
+                <div class="scrollable">
+                    <table id="stock_table">
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
             </div>
             <div id="stock_summary">
-                <div class="data"></div>
+                <table id="summary_table">
+                    <tr>
+                        <td><label>Average</label></td>
+                        <td id="open_avg">open</td>
+                        <td id="close_avg">close</td>
+                        <td id="low_avg">low</td>
+                        <td id="high_avg">high</td>
+                        <td id="volume_avg">volume</td>
+                    </tr>
+                    <tr>
+                        <td><label>Min</label></td>
+                        <td id="open_min">open</td>
+                        <td id="close_min">close</td>
+                        <td id="low_min">low</td>
+                        <td id="high_min">high</td>
+                        <td id="volume_min">volume</td>
+                    </tr>
+                    <tr>
+                        <td><label>Max</label></td>
+                        <td id="open_max">open</td>
+                        <td id="close_max">close</td>
+                        <td id="low_max">low</td>
+                        <td id="high_max">high</td>
+                        <td id="volume_max">volume</td>
+                    </tr>
+                </table>
             </div>
         </section>
         <section id="chart_view" class="view">

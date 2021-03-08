@@ -63,6 +63,25 @@ button {
     margin: auto;
 }
 
+.scrollable {
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow-y: auto;
+}
+
+table {
+    width: 100%;
+    table-layout: fixed;
+}
+
+tr:nth-child(even) {
+    background-color: var(--c3);
+}
+
+td {
+    padding: 5px;
+}
+
 /* HEADER & CREDITS*/
 
 header {
@@ -130,8 +149,8 @@ header div p {
 }
 
 #default_view {
-    grid-template-columns: 1fr 3fr 3fr;
-    grid-template-rows: 3fr 2fr 1fr;
+    grid-template-columns: 1fr 2fr 2fr;
+    grid-template-rows: 2fr 2fr 1fr;
 }
 
 #default_view div {
@@ -263,17 +282,22 @@ header div p {
     grid-row: 1/3;
     display: flex;
     flex-direction: column;
+
+}
+
+#stock_data table thead tr td label{
+    cursor: pointer;
 }
 
 #data_header {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
+    padding: 0 !important;
 }
 
-
-#stock_summary {
-
+#stock_table {
+    overflow-y: auto;
 }
 
 /* CHART VIEW */

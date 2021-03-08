@@ -19,6 +19,7 @@ document.addEventListener("DOMContentLoaded", (e) => {
     
     hide_element(list_div);
 
+
     filter_box.value = null;
 
     // CREDITS
@@ -40,10 +41,10 @@ document.addEventListener("DOMContentLoaded", (e) => {
     // a function to populate the list in the sidebar
     // takes a list of Company objects and returns an array of li nodes
     populate_list = (company_list) => {
-        let loader = document.querySelector(`#list .load`);
+        let list_spinner = document.querySelector(`#list .load`);
 
         hide_element(list_div);
-        show_element(loader, "block");
+        show_element(list_spinner, "block");
 
         let li_array = [];
         
@@ -54,20 +55,17 @@ document.addEventListener("DOMContentLoaded", (e) => {
             li_array.push(li);
             list_div.appendChild(li);
 
-            // list item event: update info card
+            // event listener for when you click on a list item
             li.addEventListener("click", (e) => {
                 document.querySelector(`#logo img`).src = `logos/${company.symbol}.svg`;
-                document.querySelector(`#description`).textContent = company.description;
-                document.querySelector(`#symbol`).textContent = company.symbol;
-                document.querySelector(`#name`).textContent = company.name;
-                document.querySelector(`#sector`).textContent = company.sector;
-                document.querySelector(`#subindustry`).textContent = company.subindustry;
-                document.querySelector(`#address`).textContent = company.address;
-                document.querySelector(`#exchange`).textContent = company.exchange;
+                for (let value of ["description", "symbol", "name", "sector", "subindustry", "address", "exchange"]) {
+                    document.querySelector(`#${value}`).textContent = company[value];
+                }
             
                 let url = document.querySelector(`#url`);
                 url.textContent = company.website;
                 url.href = company.website;
+
                 map.setCenter({lat: company.latitude, lng: company.longitude});
                 map.setZoom(6);
 
@@ -76,11 +74,37 @@ document.addEventListener("DOMContentLoaded", (e) => {
                     show_element(logo_box, "flex");
                     company_selected = true;
                 }
-            })
+            });
+
+            // fetches and displays stock data
+            li.addEventListener("click", (e) => {
+                let data_spinner = document.querySelector(`#stock_data .load`);
+                let chart_button = document.querySelector(`#view_chart_button`);
+
+                hide_element(chart_button);
+                show_element(data_spinner, "flex");
+
+                let data_promise = fetch(`https://www.randyconnolly.com/funwebdev/3rd/api/stocks/history.php?symbol=${company.symbol}`);
+                let stock_data = data_promise.then ((response) => {
+                    return response.json();
+                });
+                stock_data.then ((fetched_data) => {
+                    let table = document.querySelector(`#stock_table tbody`);
+                    let summary = create_stock_table(table, fetched_data);
+                    create_summary_table(summary);
+
+                    for (let value of ["date", "open", "close", "low", "high", "volume"]) {
+                        add_sort_listener(value, table, fetched_data);
+                    }
+                });
+
+                hide_element(data_spinner);
+                show_element(chart_button, "block");
+            });
             
         }
         
-        hide_element(loader);
+        hide_element(list_spinner);
         show_element(list_div, "block");
         return li_array;
     };
@@ -129,6 +153,7 @@ document.addEventListener("DOMContentLoaded", (e) => {
 // HELPER FUNCTIONS
 hide_element = (element) => element.style.display = "none";
 show_element = (element, property) => element.style.display = property;
+dollar = (number) => `$${Number(number).toFixed(2)}`;
 
 filter_list = (li_array, target) => {
     for (let li of li_array) {
@@ -141,11 +166,128 @@ filter_list = (li_array, target) => {
     }
 };
 
+// create_stock_table
+// takes a <table> node and stock information fetched from the API
+create_stock_table = (node, dataset) => {
+    node.textContent = "";
+
+    // the table headers used in the summary
+    params = ["open", "close", "low", "high", "volume"];
+
+    // creates the base summary object
+    let summary = {};
+    for (let param of params) {
+        summary[param] = {sum: 0, avg: 0, min: Number.POSITIVE_INFINITY, max: Number.NEGATIVE_INFINITY};
+    };
+
+    for (let row of dataset) {
+        // creates the <tr> and adds it to the <table>
+        new_row = create_row(row);
+        node.appendChild(new_row);
+
+        // updates the summary
+        for (let param of params) {
+            if (Number(summary[param].min) > Number(row[param])) {
+                summary[param].min = row[param];
+            }
+            if (Number(summary[param].max) < Number(row[param])) {
+                summary[param].max = row[param];
+            }
+            summary[param].sum += Number(row[param]);
+        }
+    }
+
+    // averages each summary element
+    for (let param of params) {
+        summary[param].avg = summary[param].sum / dataset.length;
+    }
+    
+    return summary;
+};
+
+// create_summary_table
+// takes a summary object from create_stock_table
+create_summary_table = (summary) => {
+
+    let types = ["open", "close", "low", "high", "volume"];
+    let subtypes = ["max", "min", "avg"];
+
+    for (let type of types) {
+        for (let subtype of subtypes) {
+            let value = summary[type][subtype];
+
+            if (type == "volume") {
+                value = Math.trunc(value);
+            }
+            else {
+                value = dollar(value);
+            }
+    
+            document.querySelector(`#${type}_${subtype}`).textContent = value;
+        }   
+    }
+};
+
+// add_sort_listener
+// column - string: name of the column to sort by
+// node - Node:     <table> to place the object into
+// dataset:         stock information to sort 
+add_sort_listener = (column, node, dataset) => {
+    document.querySelector(`#${column}`).addEventListener("click", (e) => {
+        if (column == "date") {
+            dataset.sort(date_sort);
+        }
+        else {
+            dataset.sort((a, b) => a[column] - b[column]);
+        }
+        create_stock_table(node, dataset);
+    });
+};
+
+create_row = (stock_data) => {
+    let new_row = document.createElement("tr");
+
+    add_cell = (key, is_currency) => {
+        let cell = document.createElement("td");
+        if (is_currency) {
+            cell.textContent = dollar(stock_data[key]);
+        }
+        else{
+            cell.textContent = stock_data[key];
+        }
+
+        new_row.appendChild(cell);
+    };
+
+    add_cell("date");
+    add_cell("open", true);
+    add_cell("close", true);
+    add_cell("low", true);
+    add_cell("high", true);
+    add_cell("volume");
+
+    return new_row;
+};
 
 // sort function from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
 const mozilla_sort = function(a, b) {
     var nameA = a.name.toUpperCase(); // ignore upper and lowercase
     var nameB = b.name.toUpperCase(); // ignore upper and lowercase
+    if (nameA < nameB) {
+      return -1;
+    }
+    if (nameA > nameB) {
+      return 1;
+    }
+  
+    // names must be equal
+    return 0;
+  };
+
+  // sort function from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
+const date_sort = function(a, b) {
+    var nameA = a.date;
+    var nameB = b.date;
     if (nameA < nameB) {
       return -1;
     }
