@@ -42,7 +42,7 @@ document.addEventListener("DOMContentLoaded", (e) => {
     // takes a list of Company objects and returns an array of li nodes
     populate_list = (company_list) => {
         let list_spinner = document.querySelector(`#list .load`);
-
+        
         hide_element(list_div);
         show_element(list_spinner, "block");
 
@@ -70,19 +70,22 @@ document.addEventListener("DOMContentLoaded", (e) => {
                 map.setZoom(6);
 
                 if (!company_selected) {
+                    hide_element(document.querySelector(`#welcome`));
                     show_element(info_card, "flex");
                     show_element(logo_box, "flex");
+                    show_element(document.querySelector(`#desc`), "flex");
+                    show_element(document.querySelector(`#map`), "flex");
                     company_selected = true;
                 }
             });
 
             // fetches and displays stock data
             li.addEventListener("click", (e) => {
-                let data_spinner = document.querySelector(`#stock_data .load`);
-                let chart_button = document.querySelector(`#view_chart_button`);
+                let stock_spinner = document.querySelector(`#stock_spinner`);
+                let stock_div = document.querySelector(`#stock_data`);
 
-                hide_element(chart_button);
-                show_element(data_spinner, "flex");
+                hide_element(stock_div);
+                show_element(stock_spinner, "flex");
 
                 let data_promise = fetch(`https://www.randyconnolly.com/funwebdev/3rd/api/stocks/history.php?symbol=${company.symbol}`);
                 let stock_data = data_promise.then ((response) => {
@@ -96,10 +99,11 @@ document.addEventListener("DOMContentLoaded", (e) => {
                     for (let value of ["date", "open", "close", "low", "high", "volume"]) {
                         add_sort_listener(value, table, fetched_data);
                     }
+                    hide_element(stock_spinner);
+                    show_element(stock_div, "flex");
                 });
 
-                hide_element(data_spinner);
-                show_element(chart_button, "block");
+
             });
             
         }

@@ -162,6 +162,18 @@ header div p {
     flex-grow: 2;
 }
 
+/* WELCOME */
+#welcome {
+    grid-row: 1/4;
+    grid-column: 2/4;
+    display: flex;
+}
+
+#welcome div {
+    margin: auto;
+    font-size: x-large;
+}
+
 /* COMPANY LIST */
 
 #list {
@@ -256,7 +268,7 @@ header div p {
 }
 
 #desc {
-    display: flex;
+    display: none;
     flex-direction: column;
     justify-content: space-between;
 }
@@ -267,6 +279,7 @@ header div p {
 }
 
 #map {
+    display: none;
     grid-row: 2/4;
     height: 100% - 50px;
     padding: 0 !important;
@@ -277,10 +290,10 @@ header div p {
     background: none;
 }
 
-
+/* STOCK TABLE */
 #stock_data {
-    grid-row: 1/3;
-    display: flex;
+    grid-row: 1/4;
+    display: none;
     flex-direction: column;
 
 }
@@ -298,6 +311,17 @@ header div p {
 
 #stock_table {
     overflow-y: auto;
+}
+
+#summary_table {
+    border-top-style: solid;
+    border-color: var(--c1);
+    border-width: 5px;
+}
+
+#stock_spinner {
+    grid-row: 1/4;
+    display: none;
 }
 
 /* CHART VIEW */

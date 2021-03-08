@@ -48,6 +48,12 @@
                 <ul>
                 </ul>
             </div>
+            <div id="welcome">
+                <div>
+                    <h2>Welcome!</h2>
+                    <p>Select a company on the left to get started.</p>
+                </div>
+            </div>
             <div id="desc">
                 <h2>Company Information</h2>
                 <div id="card">
@@ -77,7 +83,6 @@
                     <h2>Stock Data</h2>
                     <button id="view_chart_button">View Charts</button>
                 </div>
-                <div class="load"><img src="spinner.gif"></div>
                 <table>
                     <thead>
                         <tr>
@@ -96,35 +101,34 @@
                         </tbody>
                     </table>
                 </div>
-            </div>
-            <div id="stock_summary">
                 <table id="summary_table">
                     <tr>
                         <td><label>Average</label></td>
-                        <td id="open_avg">open</td>
-                        <td id="close_avg">close</td>
-                        <td id="low_avg">low</td>
-                        <td id="high_avg">high</td>
-                        <td id="volume_avg">volume</td>
+                        <td id="open_avg"></td>
+                        <td id="close_avg"></td>
+                        <td id="low_avg"></td>
+                        <td id="high_avg"></td>
+                        <td id="volume_avg"></td>
                     </tr>
                     <tr>
                         <td><label>Min</label></td>
-                        <td id="open_min">open</td>
-                        <td id="close_min">close</td>
-                        <td id="low_min">low</td>
-                        <td id="high_min">high</td>
-                        <td id="volume_min">volume</td>
+                        <td id="open_min"></td>
+                        <td id="close_min"></td>
+                        <td id="low_min"></td>
+                        <td id="high_min"></td>
+                        <td id="volume_min"></td>
                     </tr>
                     <tr>
                         <td><label>Max</label></td>
-                        <td id="open_max">open</td>
-                        <td id="close_max">close</td>
-                        <td id="low_max">low</td>
-                        <td id="high_max">high</td>
-                        <td id="volume_max">volume</td>
+                        <td id="open_max"></td>
+                        <td id="close_max"></td>
+                        <td id="low_max"></td>
+                        <td id="high_max"></td>
+                        <td id="volume_max"></td>
                     </tr>
                 </table>
             </div>
+            <div id="stock_spinner" class="load"><img src="spinner.gif"></div>
         </section>
         <section id="chart_view" class="view">
             TODO
