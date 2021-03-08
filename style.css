@@ -186,11 +186,12 @@ header div p {
 
 #list h2 {
     text-align: center;
+    display: none;
 }
 
 #search {
     background-color: var(--c1) !important; 
-    display: flex;
+    display: none;
     flex-direction: row;
     padding: 0 !important;
     margin: 0 0 5px 0;
@@ -208,6 +209,7 @@ header div p {
 }
 
 #list ul {
+    display: none;
     list-style: none;
     overflow-y: auto;
 }
@@ -228,7 +230,7 @@ header div p {
 /* COMPANY INFO */
 
 #card {
-    display: none;
+    display: flex;
     flex-direction: row;
     justify-content: space-between;
     padding: 0px 0px 0px 0px !important;
@@ -237,7 +239,7 @@ header div p {
 #logo {
     max-height: 230px;
     width: 40%;
-    display: none;
+    display: flex;
     flex-grow: 2;
     background-color: var(--c3) !important;
     border-radius: 10px;
@@ -295,7 +297,7 @@ header div p {
     grid-row: 1/4;
     display: none;
     flex-direction: column;
-
+    justify-content: space-between;
 }
 
 #stock_data table thead tr td label{
@@ -319,7 +321,7 @@ header div p {
     border-width: 5px;
 }
 
-#stock_spinner {
+#stock_spinner, #stock_error {
     grid-row: 1/4;
     display: none;
 }

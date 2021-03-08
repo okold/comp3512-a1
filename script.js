@@ -7,43 +7,42 @@ function initMap() {
   });
 }
 
-// LIST EVENTS
+let list_loaded = false;
+let company_selected = false;
+
 document.addEventListener("DOMContentLoaded", (e) => {
-    let list_div = document.querySelector(`#list ul`);
-    let info_card = document.querySelector(`#card`);
-    let logo_box = document.querySelector(`#logo`);
-    let filter_box = document.querySelector(`#target`);
-
-    let list_loaded = false;
-    let company_selected = false;
-    
-    hide_element(list_div);
-
-
-    filter_box.value = null;
 
     // CREDITS
-    let credit_button = document.querySelector("header div");
-    let credit_visible = false;
-
-    credit_button.addEventListener("click", (e) => {
+    document.querySelector("header div").addEventListener("click", (e) => {
         let credit_info = document.querySelector("#credits");
-        if (!credit_visible) {
-            show_element(credit_info,"block");
-            credit_visible = true;
-        }
-        else {
-            hide_element(credit_info)
-            credit_visible = false;
-        }
+        show_element(credit_info,"block");
+        setTimeout(() => {hide_element(credit_info)}, 5000);
     })
 
-    // a function to populate the list in the sidebar
-    // takes a list of Company objects and returns an array of li nodes
+    // FILTER BOX
+    let filter_box = document.querySelector(`#target`);
+    let li_array = [];          // used for sorting
+    filter_box.value = null;    // clears the filter on refresh
+
+    filter_box.addEventListener("change", (e) => {
+        if (list_loaded) {
+            filter_list(li_array, e.target.value);
+        }
+    });
+
+    document.querySelector(`#clear`).addEventListener("click", (e) => {
+        if (list_loaded) {
+            filter_box.value = null;
+            filter_list(li_array)
+        }
+    });
+
+    // LIST OF COMPANIES
+    let ul = document.querySelector(`#list ul`);
     populate_list = (company_list) => {
         let list_spinner = document.querySelector(`#list .load`);
         
-        hide_element(list_div);
+        hide_element(ul);
         show_element(list_spinner, "block");
 
         let li_array = [];
@@ -53,7 +52,7 @@ document.addEventListener("DOMContentLoaded", (e) => {
             li.textContent = company.name;
 
             li_array.push(li);
-            list_div.appendChild(li);
+            ul.appendChild(li);
 
             // event listener for when you click on a list item
             li.addEventListener("click", (e) => {
@@ -71,8 +70,6 @@ document.addEventListener("DOMContentLoaded", (e) => {
 
                 if (!company_selected) {
                     hide_element(document.querySelector(`#welcome`));
-                    show_element(info_card, "flex");
-                    show_element(logo_box, "flex");
                     show_element(document.querySelector(`#desc`), "flex");
                     show_element(document.querySelector(`#map`), "flex");
                     company_selected = true;
@@ -82,76 +79,82 @@ document.addEventListener("DOMContentLoaded", (e) => {
             // fetches and displays stock data
             li.addEventListener("click", (e) => {
                 let stock_spinner = document.querySelector(`#stock_spinner`);
+                let stock_error = document.querySelector(`#stock_error`);
                 let stock_div = document.querySelector(`#stock_data`);
 
+                hide_element(stock_error);
                 hide_element(stock_div);
                 show_element(stock_spinner, "flex");
 
-                let data_promise = fetch(`https://www.randyconnolly.com/funwebdev/3rd/api/stocks/history.php?symbol=${company.symbol}`);
-                let stock_data = data_promise.then ((response) => {
-                    return response.json();
-                });
-                stock_data.then ((fetched_data) => {
-                    let table = document.querySelector(`#stock_table tbody`);
-                    let summary = create_stock_table(table, fetched_data);
-                    create_summary_table(summary);
+                async function fetch_stock() {
+                    try {
+                        const response = await fetch(`https://www.randyconnolly.com/funwebdev/3rd/api/stocks/history.php?symbol=${company.symbol}`);
+                        const data = await response.json();
 
-                    for (let value of ["date", "open", "close", "low", "high", "volume"]) {
-                        add_sort_listener(value, table, fetched_data);
+                        let table = document.querySelector(`#stock_table tbody`);
+                        let summary = create_stock_table(table, data);
+
+                        if (data.length > 0) {
+                            create_summary_table(summary);
+                            for (let value of ["date", "open", "close", "low", "high", "volume"]) {
+                                add_sort_listener(value, table, data);
+                            }
+    
+                            hide_element(stock_spinner);
+                            show_element(stock_div, "flex");
+                        }
+                        else {
+                            hide_element(stock_div);
+                            hide_element(stock_spinner);
+                            show_element(stock_error, "flex");
+                            stock_error.textContent = "No stock data available!"
+                        }
                     }
-                    hide_element(stock_spinner);
-                    show_element(stock_div, "flex");
-                });
+                    catch(error) {
+                        console.log(error);
+                        show_element(stock_error, "flex");
+                        stock_error.textContent = "Error fetching stock data!"
+                    }
+                    
+                }
 
-
+                fetch_stock();
             });
             
         }
         
         hide_element(list_spinner);
-        show_element(list_div, "block");
+        show_element(ul, "block");
+        show_element(document.querySelector(`#search`), "flex");
+        show_element(document.querySelector(`#list h2`), "block");
         return li_array;
     };
 
-    // grabs the company list
+    // FETCHES THE COMPANY LIST
     let company_list = localStorage.getItem("company_list");
-    let li_array = [];
-
     if (company_list) {
         company_list = JSON.parse(company_list);
         li_array = populate_list(company_list);
         list_loaded = true;
     }
     else {
-        let list_promise = fetch("https://www.randyconnolly.com/funwebdev/3rd/api/stocks/companies.php");
-        let list_data = list_promise.then ((response) => {
-            return response.json();
-        });
-        list_data.then ((fetched_list) => {
-            company_list = fetched_list;
-            company_list.sort(mozilla_sort);
-            li_array = populate_list(company_list);
-            localStorage.setItem("company_list", JSON.stringify(company_list));
-            list_loaded = true;
-        });
+        async function fetch_companies() {
+            try {
+                const response = await fetch("https://www.randyconnolly.com/funwebdev/3rd/api/stocks/companies.php");
+                const data = await response.json();
+
+                data.sort(mozilla_sort);
+                li_array = populate_list(data);
+                localStorage.setItem("company_list", JSON.stringify(data));
+                list_loaded = true;
+            }
+            catch(error) {
+                console.log(error);
+            }
+        }
+
+        fetch_companies();
     }
-    
-    // filter box events
-    filter_box.addEventListener("change", (e) => {
-        if (list_loaded) {
-            filter_list(li_array, e.target.value);
-        }
-    });
-
-    document.querySelector(`#clear`).addEventListener("click", (e) => {
-        if (list_loaded) {
-            filter_box.value = null;
-            filter_list(li_array)
-        }
-    });
-
-
-
 });
 
 // HELPER FUNCTIONS
@@ -159,6 +162,9 @@ hide_element = (element) => element.style.display = "none";
 show_element = (element, property) => element.style.display = property;
 dollar = (number) => `$${Number(number).toFixed(2)}`;
 
+
+// filter_list
+// takes an array of lis and displays/hides them based on the target
 filter_list = (li_array, target) => {
     for (let li of li_array) {
         if (!target || li.textContent.toUpperCase().startsWith(target.toUpperCase())) {
@@ -218,16 +224,21 @@ create_summary_table = (summary) => {
 
     for (let type of types) {
         for (let subtype of subtypes) {
-            let value = summary[type][subtype];
+            if (summary) {
+                let value = summary[type][subtype];
 
-            if (type == "volume") {
-                value = Math.trunc(value);
+                if (type == "volume") {
+                    value = Math.trunc(value);
+                }
+                else {
+                    value = dollar(value);
+                }
+                
+                document.querySelector(`#${type}_${subtype}`).textContent = value;
             }
             else {
-                value = dollar(value);
+                document.querySelector(`#${type}_${subtype}`).textContent = "";
             }
-    
-            document.querySelector(`#${type}_${subtype}`).textContent = value;
         }   
     }
 };
@@ -288,7 +299,7 @@ const mozilla_sort = function(a, b) {
     return 0;
   };
 
-  // sort function from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
+// sort function from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
 const date_sort = function(a, b) {
     var nameA = a.date;
     var nameB = b.date;
