@@ -1,3 +1,9 @@
+/*******************************************************************************
+* ASSIGNMENT 1 - SINGLE-PAGE APP
+* OLGA KOLDACHENKO - okold525@mtroyal.ca
+* COMP 3512 - Winter 2021 - Randy Connolly
+*/
+
 // MAP SETUP
 var map;
 function initMap() {
@@ -121,10 +127,10 @@ document.addEventListener("DOMContentLoaded", (e) => {
                         const data = await response.json();
 
                         let table = document.querySelector(`#stock_table tbody`);
-                        let summary = create_stock_table(table, data);
+                        let summary = process_stocks(table, data);
 
                         if (data.length > 0) {
-                            create_summary_table(summary);
+                            update_summary(summary);
                             for (let value of ["date", "open", "close", "low", "high", "volume"]) {
                                 add_sort_listener(value, table, data);
                             }
@@ -159,7 +165,7 @@ document.addEventListener("DOMContentLoaded", (e) => {
         return li_array;
     };
 
-    // FETCHES THE COMPANY LIST
+    // fetches the company list
     let company_list = localStorage.getItem("company_list");
     if (company_list) {
         company_list = JSON.parse(company_list);
@@ -186,14 +192,16 @@ document.addEventListener("DOMContentLoaded", (e) => {
     }
 });
 
-// HELPER FUNCTIONS
+/*******************************************************************************
+* HELPER FUNCTIONS
+*/
 hide_element = (element) => element.style.display = "none";
 show_element = (element, property) => element.style.display = property;
-dollar = (number) => `$${Number(number).toFixed(2)}`;
+dollar = (num) => Intl.NumberFormat('en-us', {style: 'currency', currency: 'USD'}).format(num);
 
 
 // filter_list
-// takes an array of lis and displays/hides them based on the target
+// takes an array of <li>s and displays/hides them based on the target
 filter_list = (li_array, target) => {
     for (let li of li_array) {
         if (!target || li.textContent.toUpperCase().startsWith(target.toUpperCase())) {
@@ -205,11 +213,15 @@ filter_list = (li_array, target) => {
     }
 };
 
-// create_stock_table
+/*******************************************************************************
+* DATA DISPLAY
+*/
+
+// process_stocks
 // takes a <table> node, stock information fetched from the API, and a boolean 
 // use sort = true if you want to not redraw the chart
 // THIS IS A HORRIBLE FUNCTION. I NEED TO DECOUPLE THE CHART AND THE TABLE
-create_stock_table = (node, dataset, sort) => {
+process_stocks = (node, dataset, sort) => {
     node.textContent = "";
     let date_list = [];
     let close_list = [];
@@ -251,56 +263,17 @@ create_stock_table = (node, dataset, sort) => {
         summary[param].avg = summary[param].sum / dataset.length;
     }
     
-    let chart = document.querySelector(`#line_chart`);
-    
     if (!sort) {
-        if (line_chart) {
-            line_chart.destroy();
-        }
-    
-        line_chart = new Chart(chart, {
-            type: "line",
-            data: {
-                labels: date_list,
-                datasets: [{
-                    label: "Close Value",
-                    data: close_list,
-                    borderColor: "rgb(79, 137, 245)",
-                    backgroundColor: "rgba(0, 0, 0, 0)",
-                    yAxisID: "Close"
-                },{
-                    label: "Volume",
-                    data: volume_list,
-                    borderColor: "rgb(230, 103, 103)",
-                    backgroundColor: "rgba(0, 0, 0, 0)",
-                    yAxisID: "Volume"
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    yAxes: [{
-                        id: "Close",
-                        type: "linear",
-                        position: "left"
-                    },{
-                        id: "Volume",
-                        type: "linear",
-                        position: "right"
-                    }]
-                }
-            }
-        });
+        update_line_chart(date_list, close_list, volume_list);
     }
-
-    
 
     return summary;
 };
 
-// create_summary_table
-// takes a summary object from create_stock_table
-create_summary_table = (summary) => {
+// update_summary
+// takes a summary object from process_stocks and updates the table and
+// the candlestick chart
+update_summary = (summary) => {
 
     let types = ["open", "close", "low", "high", "volume"];
     let subtypes = ["max", "min", "avg"];
@@ -325,40 +298,7 @@ create_summary_table = (summary) => {
         }   
     }
 
-    let option = {
-        xAxis: {
-            data: ['Min', 'Max', 'Avg']
-        },
-        yAxis: {
-            min: summary.low.min - 5
-        },
-        series: [{
-            type: 'k',
-            data: [
-                [summary.open.min, summary.close.min, summary.low.min, summary.high.min],
-                [summary.open.max, summary.close.max, summary.low.max, summary.high.max],
-                [summary.open.avg, summary.close.avg, summary.low.avg, summary.high.avg],
-            ]
-        }]
-    };
-
-    summary_chart.setOption(option);
-};
-
-// add_sort_listener
-// column - string: name of the column to sort by
-// node - Node:     <table> to place the object into
-// dataset:         stock information to sort 
-add_sort_listener = (column, node, dataset) => {
-    document.querySelector(`#${column}`).addEventListener("click", (e) => {
-        if (column == "date") {
-            dataset.sort(date_sort);
-        }
-        else {
-            dataset.sort((a, b) => a[column] - b[column]);
-        }
-        create_stock_table(node, dataset);
-    });
+    update_candlestick_chart(summary);
 };
 
 // create_row
@@ -388,11 +328,28 @@ create_row = (stock_data) => {
     return new_row;
 };
 
+// add_sort_listener
+// column - string: name of the column to sort by
+// node - Node:     <table> to place the object into
+// dataset:         stock information to sort 
+add_sort_listener = (column, node, dataset) => {
+    document.querySelector(`#${column}`).addEventListener("click", (e) => {
+        if (column == "date") {
+            dataset.sort(date_sort);
+        }
+        else {
+            dataset.sort((a, b) => a[column] - b[column]);
+        }
+        process_stocks(node, dataset);
+    });
+};
+
+// update_financials
+// updates the financial table and chart in the chart view
 update_financials = (company) => {
     let table = document.querySelector(`#financials table`);
     let tbody = document.querySelector(`#financials table tbody`);
     let error = document.querySelector(`#financials div`);
-    let chart = document.querySelector(`#fin_chart`);
 
     tbody.textContent = "";
     if (company.financials) {
@@ -416,38 +373,7 @@ update_financials = (company) => {
             }
 
             tbody.appendChild(new_row);
-
-            if (bar_chart) {
-                bar_chart.destroy();
-            }
-
-            bar_chart = new Chart(chart, {
-                type: "bar",
-                data: {
-                    labels: company.financials.years,
-                    datasets: [{
-                        label: "Revenue",
-                        data: company.financials.revenue,
-                        backgroundColor: "rgb(79, 137, 245)"
-                    },{
-                        label: "Earnings",
-                        data: company.financials.earnings,
-                        backgroundColor: "rgb(79, 196, 64)"
-                    },{
-                        label: "Assets",
-                        data: company.financials.assets,
-                        backgroundColor: "rgb(250, 213, 93)"
-                    },{
-                        label: "Liabilities",
-                        data: company.financials.liabilities,
-                        backgroundColor: "rgb(230, 103, 103)"
-                    }
-                    ]
-                },
-                options: {
-                    responsive: true
-                }
-            });
+            update_bar_chart(company);
         }
     }
     else
@@ -460,7 +386,120 @@ update_financials = (company) => {
     }
 };
 
-// sort function from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
+/*******************************************************************************
+* CHART UPDATE FUNCTIONS
+*/
+
+// update_bar_chart
+// updates the bar chart with the given company
+update_bar_chart = (company) => {
+    let chart = document.querySelector(`#fin_chart`);
+
+    if (bar_chart) {
+        bar_chart.destroy();
+    }
+
+    bar_chart = new Chart(chart, {
+        type: "bar",
+        data: {
+            labels: company.financials.years,
+            datasets: [{
+                label: "Revenue",
+                data: company.financials.revenue,
+                backgroundColor: "rgb(79, 137, 245)"
+            },{
+                label: "Earnings",
+                data: company.financials.earnings,
+                backgroundColor: "rgb(79, 196, 64)"
+            },{
+                label: "Assets",
+                data: company.financials.assets,
+                backgroundColor: "rgb(250, 213, 93)"
+            },{
+                label: "Liabilities",
+                data: company.financials.liabilities,
+                backgroundColor: "rgb(230, 103, 103)"
+            }
+            ]
+        },
+        options: {
+            responsive: true
+        }
+    });
+}
+
+// update_line_chart
+// needs lists of dates, close values, and volume values, with corresponding
+// indices
+update_line_chart = (date_list, close_list, volume_list) => {
+    let chart = document.querySelector(`#line_chart`);
+    if (line_chart) {
+        line_chart.destroy();
+    }
+
+    line_chart = new Chart(chart, {
+        type: "line",
+        data: {
+            labels: date_list,
+            datasets: [{
+                label: "Close Value",
+                data: close_list,
+                borderColor: "rgb(79, 137, 245)",
+                backgroundColor: "rgba(0, 0, 0, 0)",
+                yAxisID: "Close"
+            },{
+                label: "Volume",
+                data: volume_list,
+                borderColor: "rgb(230, 103, 103)",
+                backgroundColor: "rgba(0, 0, 0, 0)",
+                yAxisID: "Volume"
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                yAxes: [{
+                    id: "Close",
+                    type: "linear",
+                    position: "left"
+                },{
+                    id: "Volume",
+                    type: "linear",
+                    position: "right"
+                }]
+            }
+        }
+    });
+}
+
+// update_candlestick_chart
+// needs a summary object, created in process_stocks
+update_candlestick_chart = (summary) => {
+    let option = {
+        xAxis: {
+            data: ['Min', 'Max', 'Avg']
+        },
+        yAxis: {
+            min: summary.low.min - 5
+        },
+        series: [{
+            type: 'k',
+            data: [
+                [summary.open.min, summary.close.min, summary.low.min, summary.high.min],
+                [summary.open.max, summary.close.max, summary.low.max, summary.high.max],
+                [summary.open.avg, summary.close.avg, summary.low.avg, summary.high.avg],
+            ]
+        }]
+    };
+
+    summary_chart.setOption(option);
+}
+/*******************************************************************************
+* SORTING FUNCTIONS 
+*/
+
+// mozilla_sort
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
 const mozilla_sort = function(a, b) {
     var nameA = a.name.toUpperCase(); // ignore upper and lowercase
     var nameB = b.name.toUpperCase(); // ignore upper and lowercase
@@ -473,9 +512,10 @@ const mozilla_sort = function(a, b) {
   
     // names must be equal
     return 0;
-  };
+};
 
-// sort function from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
+// date_sort
+// there's gotta be a better way
 const date_sort = function(a, b) {
     var nameA = a.date;
     var nameB = b.date;
@@ -485,7 +525,5 @@ const date_sort = function(a, b) {
     if (nameA > nameB) {
       return 1;
     }
-  
-    // names must be equal
     return 0;
-  };
+};

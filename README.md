@@ -2,10 +2,11 @@
 ### Assignment #1: Single-Page App
 
 I'm so sorry that you need to read my spaghetti, Randy.
+Hosted at https://okold.github.io/comp3512-a1/
 
 ## Known Issues
-- Upon discovering that Charts.js doesn't actually have a candlestick (at around 9PM on the due date, hahaha), I switched to eCharts just for the one graph, so it's kinda wonky right now. If I had more time, I'd switch the rest of the charts over for unification's sake.
+- The single-file mass of 500 lines of code terrifies me, but it'd take a good day to clean it up. Guess what I procrastinated on?
+- Upon my (last minute) discovery that Charts.js doesn't actually have a candlestick, I switched to eCharts just for the one graph, so it's kinda wonky right now. If I had more time, I'd switch the rest of the charts over for unification's sake.
 - I need to decouple a lot of things and maybe make objects.
 - Resizing the window in the chart view is no bueno.
 - Sorting the stock data could be better, with little arrows indicating what you're sorting by.
-- Dollar values don't have commas in large values yet...
