@@ -2,6 +2,7 @@
 ### Assignment #1: Single-Page App
 
 I'm so sorry that you need to read my spaghetti, Randy.
+
 Hosted at https://okold.github.io/comp3512-a1/
 
 ## Known Issues

@@ -476,7 +476,6 @@ update_line_chart = (date_list, close_list, volume_list) => {
 // needs a summary object, created in process_stocks
 update_candlestick_chart = (summary) => {
     let option = {
-        responsive: true,
         xAxis: {
             data: ['Min', 'Max', 'Avg']
         },
