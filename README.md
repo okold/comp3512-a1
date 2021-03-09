@@ -7,7 +7,7 @@ Hosted at https://okold.github.io/comp3512-a1/
 
 ## Known Issues
 
-- Upon my (last minute) discovery that Charts.js doesn't actually have a candlestick, I downloaded and fought with the chartsjs-financials extension. In the end, I decided to switch to ECharts just for the one graph, and it's pretty wonky right now.
-- The single-file mass of 500 lines of code terrifies me, there's got to be a better way. I should encapsulate groups of functions into objects, but alas, it's 11:30PM right now. I need to take the time to looks at large JS projects to see how everything is organized, and maybe not dump everything into one file again.
+- Upon my (last minute) discovery that Chart.js doesn't actually have a candlestick, I downloaded and fought with chartjs-chart-financial. In the end, I decided to switch to ECharts just for the one graph, and it's pretty bland right now. Could use tooltips.
+- The mass of 500 lines of code terrifies me. There's got to be a better way, like maybe actually using objects. I need to take the time to looks at large JS projects to see how everything is organized, and maybe not dump everything into one file again.
 - Resizing the window in the chart view is no bueno. The chart view in general can be kinda gross at low resolutions. I mostly tested this at 1080p.
-- Sorting the stock data could be better, with little arrows indicating what you're sorting by.
+- Sorting the stock data could be better, with little arrows indicating what you're sorting by (and letting you flip the direction).
