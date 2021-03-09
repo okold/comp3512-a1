@@ -7,8 +7,11 @@ function initMap() {
   });
 }
 
+var bar_chart;
+var summary_chart;
+var line_chart;
+
 let list_loaded = false;
-let company_selected = false;
 
 document.addEventListener("DOMContentLoaded", (e) => {
 
@@ -37,6 +40,25 @@ document.addEventListener("DOMContentLoaded", (e) => {
         }
     });
 
+    // CHART BUTTONS
+    document.querySelector(`#open_chart`).addEventListener("click", (e) => {
+        hide_element(document.querySelector(`#default_view`));
+        show_element(document.querySelector(`#chart_view`), "grid");
+    });
+
+    document.querySelector(`#close_chart`).addEventListener("click", (e) => {
+        hide_element(document.querySelector(`#chart_view`));
+        show_element(document.querySelector(`#default_view`), "grid");
+    });
+
+    // SPEECH SYNTHESIS
+    document.querySelector(`#speech`).addEventListener("click", (e) => {
+        if (!speechSynthesis.speaking) {
+            let utterance = new SpeechSynthesisUtterance(document.querySelector(`#chart_desc p`).textContent);
+            speechSynthesis.speak(utterance);
+        }
+    });
+
     // LIST OF COMPANIES
     let ul = document.querySelector(`#list ul`);
     populate_list = (company_list) => {
@@ -56,6 +78,7 @@ document.addEventListener("DOMContentLoaded", (e) => {
 
             // event listener for when you click on a list item
             li.addEventListener("click", (e) => {
+                // updates the default view card
                 document.querySelector(`#logo img`).src = `logos/${company.symbol}.svg`;
                 for (let value of ["description", "symbol", "name", "sector", "subindustry", "address", "exchange"]) {
                     document.querySelector(`#${value}`).textContent = company[value];
@@ -65,15 +88,19 @@ document.addEventListener("DOMContentLoaded", (e) => {
                 url.textContent = company.website;
                 url.href = company.website;
 
+                // sets the map
                 map.setCenter({lat: company.latitude, lng: company.longitude});
                 map.setZoom(6);
 
-                if (!company_selected) {
-                    hide_element(document.querySelector(`#welcome`));
-                    show_element(document.querySelector(`#desc`), "flex");
-                    show_element(document.querySelector(`#map`), "flex");
-                    company_selected = true;
-                }
+                hide_element(document.querySelector(`#welcome`));
+                show_element(document.querySelector(`#desc`), "flex");
+                show_element(document.querySelector(`#map`), "flex");
+
+                // updates the chart view info
+                document.querySelector(`#chart_desc h2`).textContent = `${company.name} - ${company.symbol}`;
+                document.querySelector(`#chart_desc p`).textContent = `${company.description}`;
+                update_financials(company);
+                
             });
 
             // fetches and displays stock data
@@ -177,9 +204,14 @@ filter_list = (li_array, target) => {
 };
 
 // create_stock_table
-// takes a <table> node and stock information fetched from the API
-create_stock_table = (node, dataset) => {
+// takes a <table> node, stock information fetched from the API, and a boolean 
+// use sort = true if you want to not redraw the chart
+// THIS IS A HORRIBLE FUNCTION. I NEED TO DECOUPLE THE CHART AND THE TABLE
+create_stock_table = (node, dataset, sort) => {
     node.textContent = "";
+    let date_list = [];
+    let close_list = [];
+    let volume_list = [];
 
     // the table headers used in the summary
     params = ["open", "close", "low", "high", "volume"];
@@ -194,6 +226,11 @@ create_stock_table = (node, dataset) => {
         // creates the <tr> and adds it to the <table>
         new_row = create_row(row);
         node.appendChild(new_row);
+
+        //updates chart lists
+        date_list.push(row.date);
+        close_list.push(row.close);
+        volume_list.push(row.volume);
 
         // updates the summary
         for (let param of params) {
@@ -212,6 +249,50 @@ create_stock_table = (node, dataset) => {
         summary[param].avg = summary[param].sum / dataset.length;
     }
     
+    let chart = document.querySelector(`#line_chart`);
+    
+    if (!sort) {
+        if (line_chart) {
+            line_chart.destroy();
+        }
+    
+        line_chart = new Chart(chart, {
+            type: "line",
+            data: {
+                labels: date_list,
+                datasets: [{
+                    label: "Close Value",
+                    data: close_list,
+                    borderColor: "rgb(79, 137, 245)",
+                    backgroundColor: "rgba(0, 0, 0, 0)",
+                    yAxisID: "Close"
+                },{
+                    label: "Volume",
+                    data: volume_list,
+                    borderColor: "rgb(230, 103, 103)",
+                    backgroundColor: "rgba(0, 0, 0, 0)",
+                    yAxisID: "Volume"
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    yAxes: [{
+                        id: "Close",
+                        type: "linear",
+                        position: "left"
+                    },{
+                        id: "Volume",
+                        type: "linear",
+                        position: "right"
+                    }]
+                }
+            }
+        });
+    }
+
+    
+
     return summary;
 };
 
@@ -241,6 +322,22 @@ create_summary_table = (summary) => {
             }
         }   
     }
+
+    let chart = document.querySelector(`#summary_chart`);
+
+    if (summary_chart) {
+        summary_chart.destroy();
+    }
+
+    summary_chart = new Chart(chart, {
+        type: "candlestick",
+        data: {
+            labels: ["Open", "Close", "Low", "High"]
+        },
+        options: {
+            responsive: true
+        }
+    });
 };
 
 // add_sort_listener
@@ -259,6 +356,8 @@ add_sort_listener = (column, node, dataset) => {
     });
 };
 
+// create_row
+// creates a row in the default view table
 create_row = (stock_data) => {
     let new_row = document.createElement("tr");
 
@@ -282,6 +381,78 @@ create_row = (stock_data) => {
     add_cell("volume");
 
     return new_row;
+};
+
+update_financials = (company) => {
+    let table = document.querySelector(`#financials table`);
+    let tbody = document.querySelector(`#financials table tbody`);
+    let error = document.querySelector(`#financials div`);
+    let chart = document.querySelector(`#fin_chart`);
+
+    tbody.textContent = "";
+    if (company.financials) {
+        hide_element(error);
+        show_element(table, "table");
+
+        for (let i = 0; i < company.financials.years.length; i++) {
+            let new_row = document.createElement(`tr`);
+
+            for (let col of ["years", "revenue", "earnings", "assets", "liabilities"]) {
+                let new_cell = document.createElement(`td`);
+
+                if (col == "years") {
+                    new_cell.textContent = company.financials[col][i];
+                }
+                else {
+                    new_cell.textContent = dollar(company.financials[col][i]);
+                }
+                
+                new_row.appendChild(new_cell);
+            }
+
+            tbody.appendChild(new_row);
+
+            if (bar_chart) {
+                bar_chart.destroy();
+            }
+
+            bar_chart = new Chart(chart, {
+                type: "bar",
+                data: {
+                    labels: company.financials.years,
+                    datasets: [{
+                        label: "Revenue",
+                        data: company.financials.revenue,
+                        backgroundColor: "rgb(79, 137, 245)"
+                    },{
+                        label: "Earnings",
+                        data: company.financials.earnings,
+                        backgroundColor: "rgb(79, 196, 64)"
+                    },{
+                        label: "Assets",
+                        data: company.financials.assets,
+                        backgroundColor: "rgb(250, 213, 93)"
+                    },{
+                        label: "Liabilities",
+                        data: company.financials.liabilities,
+                        backgroundColor: "rgb(230, 103, 103)"
+                    }
+                    ]
+                },
+                options: {
+                    responsive: true
+                }
+            });
+        }
+    }
+    else
+    {
+        show_element(error, "flex");
+        hide_element(table);
+        if (bar_chart) {
+            bar_chart.destroy();
+        }
+    }
 };
 
 // sort function from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort

@@ -6,9 +6,10 @@
         <link rel="preconnect" href="https://fonts.gstatic.com">
         <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
         <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@2/dist/Chart.min.js"></script>
+        <script src="script.js"></script>
         <link rel="stylesheet" href="reset.css">
         <link rel="stylesheet" href="style.css">
-        <script src="script.js"></script>
     </head>
     <body>
         <header>
@@ -81,7 +82,7 @@
             <div id="stock_data">
                 <div id="data_header">
                     <h2>Stock Data</h2>
-                    <button id="view_chart_button">View Charts</button>
+                    <button id="open_chart" class="chart_btn">View Charts</button>
                 </div>
                 <table>
                     <thead>
@@ -132,7 +133,36 @@
             <div id="stock_error" class="load"></div>
         </section>
         <section id="chart_view" class="view">
-            TODO
+            <div id="charts">
+                <div><canvas id="fin_chart"></canvas></div>
+                <div><canvas id="summary_chart"></canvas></div>
+                <div><canvas id="line_chart"></canvas></div>
+            </div>
+            <div id="chart_desc">
+                <div>
+                    <h2></h2>
+                    <button id="close_chart" class="chart_btn">Close Charts</button>
+                </div>
+                <p></p>
+                <button id="speech">Speak</button>
+            </div>
+            <div id="financials">
+                <h2>Financials</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <td><label>Year</label></td>
+                            <td><label>Revenue</label></td>
+                            <td><label>Earnings</label></td>
+                            <td><label>Assets</label></td>
+                            <td><label>Liabilities</label></td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+                <div>No financial information available!</div>
+            </div>
         </section>
         <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBw7kP8WyINRuq5K6fwF2XiYwq7yTY2VBc&callback=initMap"></script>
     </body>

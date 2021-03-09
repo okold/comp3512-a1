@@ -138,14 +138,13 @@ header div p {
 
 .view {
     display: grid;
-    grid-gap: 5px;
+    grid-gap: 10px;
 
     /*  Height calculation referenced from: 
         https://www.whitebyte.info/programming/css/how-to-make-a-div-take-the-remaining-height
         Accessed Feb 27, 20201
         Solution 4, though I used 100vh instead of 100% */
     height: calc(100vh - 70px);
-    margin-right: 5px;
 }
 
 #default_view {
@@ -153,7 +152,7 @@ header div p {
     grid-template-rows: 2fr 2fr 1fr;
 }
 
-#default_view div {
+.view div {
     background-color: var(--c4);
     padding: 15px;
 }
@@ -161,6 +160,8 @@ header div p {
 #default_view div .data {
     flex-grow: 2;
 }
+
+
 
 /* WELCOME */
 #welcome {
@@ -330,4 +331,52 @@ header div p {
 
 #chart_view {
     display: none;
+    grid-template-columns: 3fr 2fr;
+    grid-template-rows: 1fr 2fr;
+}
+
+#charts {
+    grid-row: 1/3;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+}
+
+#chart_desc {
+    display: flex;
+    flex-direction: column;
+}
+
+#chart_desc div {
+    padding: 0;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+#chart_desc p {
+    margin-top: 10px;
+}
+
+.chart_btn {
+    width: 120px;
+}
+
+#speech {
+    margin: auto;
+    padding: 10px;
+}
+
+#financials {
+    display: flex;
+    flex-direction: column;
+}
+
+#financials div {
+    display: none;
+    margin: auto;
+}
+
+#charts div:nth-child(3) {
+    grid-column: 1/3;
 }
