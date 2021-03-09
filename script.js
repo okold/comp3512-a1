@@ -15,6 +15,8 @@ let list_loaded = false;
 
 document.addEventListener("DOMContentLoaded", (e) => {
 
+    summary_chart = echarts.init(document.querySelector(`#summary_chart`));
+
     // CREDITS
     document.querySelector("header div").addEventListener("click", (e) => {
         let credit_info = document.querySelector("#credits");
@@ -323,21 +325,24 @@ create_summary_table = (summary) => {
         }   
     }
 
-    let chart = document.querySelector(`#summary_chart`);
-
-    if (summary_chart) {
-        summary_chart.destroy();
-    }
-
-    summary_chart = new Chart(chart, {
-        type: "candlestick",
-        data: {
-            labels: ["Open", "Close", "Low", "High"]
+    let option = {
+        xAxis: {
+            data: ['Min', 'Max', 'Avg']
         },
-        options: {
-            responsive: true
-        }
-    });
+        yAxis: {
+            min: summary.low.min - 5
+        },
+        series: [{
+            type: 'k',
+            data: [
+                [summary.open.min, summary.close.min, summary.low.min, summary.high.min],
+                [summary.open.max, summary.close.max, summary.low.max, summary.high.max],
+                [summary.open.avg, summary.close.avg, summary.low.avg, summary.high.avg],
+            ]
+        }]
+    };
+
+    summary_chart.setOption(option);
 };
 
 // add_sort_listener
